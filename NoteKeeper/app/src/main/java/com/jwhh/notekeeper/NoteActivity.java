@@ -38,6 +38,7 @@ public class NoteActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Configuration changes
         ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
                 (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
         mViewModel = viewModelProvider.get(NoteActivityViewModel.class);
@@ -80,21 +81,19 @@ public class NoteActivity extends AppCompatActivity {
         mIsNewNote = mNote == null;
         * */
         Intent intent = getIntent();
-        int position = intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET); // POSITION_NOT_SET  for default value
-        mIsNewNote = position == POSITION_NOT_SET;
+        mNotePosition = intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET); // POSITION_NOT_SET  for default value
+        mIsNewNote = mNotePosition == POSITION_NOT_SET;
 
-        if (mIsNewNote) {
+        if (mIsNewNote)
             createNewNote();
-        } else {
-            mNote = DataManager.getInstance().getNotes().get(position);
-        }
+
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+
     }
 
     private void createNewNote() {
         DataManager dm = DataManager.getInstance();
         mNotePosition = dm.createNewNote();
-        mNote = dm.getNotes().get(mNotePosition);
-
     }
 
     private void displayNote(Spinner spinner, EditText textNoteTitle, EditText textNoteText) {
