@@ -8,17 +8,17 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class DataManagerTest  {
+public class DataManagerTest {
     private static DataManager sDataManager;
 
     @BeforeClass
-    public static void classSetUp(){
+    public static void classSetUp() {
         sDataManager = DataManager.getInstance();
     }
 
 
     @Before
-    public void setUp(){
+    public void setUp() {
         sDataManager.getNotes().clear();
         sDataManager.initializeExampleNotes();
     }
@@ -40,13 +40,13 @@ public class DataManagerTest  {
         // assertSame() isn't a valid test as we want to assure the values are the same not just the index.
         // assertSame(newNote,compareNote);
 
-        assertEquals(course,compareNote.getCourse());
-        assertEquals(noteTitle,compareNote.getTitle());
-        assertEquals(noteText,compareNote.getText());
+        assertEquals(course, compareNote.getCourse());
+        assertEquals(noteTitle, compareNote.getTitle());
+        assertEquals(noteText, compareNote.getText());
     }
 
     @Test
-    public void findSimilarNotes(){
+    public void findSimilarNotes() {
         final CourseInfo course = sDataManager.getCourse("android_async");
         final String noteTitle = "Test Note Title";
         final String noteText2 = "This is the body of my test note";
@@ -65,9 +65,24 @@ public class DataManagerTest  {
         newNote2.setText(noteText2);
 
         int foundIndex1 = sDataManager.findNote(newNote1);
-        assertEquals(noteIndex1,foundIndex1);
+        assertEquals(noteIndex1, foundIndex1);
 
         int foundIndex2 = sDataManager.findNote(newNote2);
-        assertEquals(foundIndex2,foundIndex2);
+        assertEquals(foundIndex2, foundIndex2);
+    }
+
+    @Test
+    public void createNewNoteOneStepCreation() {
+        final CourseInfo course = sDataManager.getCourse("android_async");
+        final String noteTitle = "Test note titel";
+        final String noteText = "Test note text";
+
+        int noteIndex = sDataManager.createNewNote(course, noteTitle, noteText);
+
+        NoteInfo note = sDataManager.getNotes().get(noteIndex);
+        assertEquals(note.getCourse(), course);
+        assertEquals(note.getTitle(), noteTitle);
+        assertEquals(note.getText(), noteText);
+
     }
 }
