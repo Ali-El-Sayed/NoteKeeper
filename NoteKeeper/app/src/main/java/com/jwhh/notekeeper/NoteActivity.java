@@ -128,9 +128,20 @@ public class NoteActivity extends AppCompatActivity {
             mIsCancelling = true;
             finish();
             return true;
+        } else if (id == R.id.action_next) {
+            moveNext();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void moveNext() {
+        saveNote();
+        ++mNotePosition;
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+
+//        saveOriginalNoteValues();
+        displayNote(mSpinnerCourses, mTextNoteTitle, mTextNoteText);
     }
 
     @Override
@@ -145,7 +156,6 @@ public class NoteActivity extends AppCompatActivity {
             Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show();
         } else {
             saveNote();
-            Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -168,6 +178,7 @@ public class NoteActivity extends AppCompatActivity {
         mNote.setCourse((CourseInfo) mSpinnerCourses.getSelectedItem());
         mNote.setText(mTextNoteText.getText().toString());
         mNote.setTitle(mTextNoteTitle.getText().toString());
+        Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
     }
 
     private void sendEmail() {
