@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -62,7 +64,10 @@ public class NoteActivity extends AppCompatActivity {
         mTextNoteTitle = findViewById(R.id.text_note_title);
         mTextNoteText = findViewById(R.id.text_note_text);
         if (!mIsNewNote) displayNote(mSpinnerCourses, mTextNoteTitle, mTextNoteText);
+
     }
+
+
 
     private void saveOriginalNoteValues() {
         if (mIsNewNote)
@@ -145,6 +150,7 @@ public class NoteActivity extends AppCompatActivity {
 
     private void moveNext() {
         saveNote();
+        Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
         ++mNotePosition;
         mNote = DataManager.getInstance().getNotes().get(mNotePosition);
 
@@ -165,6 +171,7 @@ public class NoteActivity extends AppCompatActivity {
             Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show();
         } else {
             saveNote();
+            Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -187,7 +194,6 @@ public class NoteActivity extends AppCompatActivity {
         mNote.setCourse((CourseInfo) mSpinnerCourses.getSelectedItem());
         mNote.setText(mTextNoteText.getText().toString());
         mNote.setTitle(mTextNoteTitle.getText().toString());
-        Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
     }
 
     private void sendEmail() {
