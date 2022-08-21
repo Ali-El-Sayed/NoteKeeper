@@ -4,25 +4,33 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
-import androidx.navigation.ui.AppBarConfiguration;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class NoteListActivity extends AppCompatActivity {
+public class NoteListActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
-    private AppBarConfiguration appBarConfiguration;
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
+    private ImageView mNavBarImage;
+    private DrawerLayout mDrawerLayout;
+    private NavigationView mNavigationView;
+
     //    private ArrayAdapter<NoteInfo> mAdapterNotes;
 
     @Override
@@ -31,6 +39,19 @@ public class NoteListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_note_list);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mNavBarImage = findViewById(R.id.nav_drawer_image);
+
+        mNavigationView = (NavigationView) findViewById(R.id.nav_view);
+        mNavigationView.setNavigationItemSelectedListener(this);
+
+        mNavBarImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -42,6 +63,14 @@ public class NoteListActivity extends AppCompatActivity {
 
         initializeDisplayContent();
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout.isOpen())
+            mDrawerLayout.closeDrawers();
+        else
+            super.onBackPressed();
     }
 
     @Override
@@ -76,4 +105,28 @@ public class NoteListActivity extends AppCompatActivity {
         recyclerNotes.setAdapter(mNoteRecyclerAdapter);
 
     }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.nav_courses:
+                handleSelection("Courses");
+
+                break;
+            case R.id.nav_notes:
+                handleSelection("Notes");
+                break;
+        }
+
+
+        return true;
+    }
+
+    private void handleSelection(String message) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+        Snackbar.make(mNavigationView, message, Snackbar.LENGTH_SHORT).show();
+    }
+
 }
