@@ -10,14 +10,15 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,6 +31,10 @@ public class NoteListActivity extends AppCompatActivity
     private ImageView mNavBarImage;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
+    private RecyclerView mRecyclerItems;
+    private LinearLayoutManager mNotesLayoutManager;
+    private CourseRecyclerAdapter mCourseRecyclerAdapter;
+    private GridLayoutManager mCourseLayoutManager;
 
     //    private ArrayAdapter<NoteInfo> mAdapterNotes;
 
@@ -81,29 +86,38 @@ public class NoteListActivity extends AppCompatActivity
     }
 
     private void initializeDisplayContent() {
-//        final ListView listNotes = findViewById(R.id.list_notes);
-//
-//        List<NoteInfo> notes = DataManager.getInstance().getNotes();
-//        mAdapterNotes = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, notes);
-//
-//        listNotes.setAdapter(mAdapterNotes);
-//        listNotes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-//                Intent intent = new Intent(NoteListActivity.this, NoteActivity.class);
-////                NoteInfo note = (NoteInfo) listNotes.getItemAtPosition(position);
-//                intent.putExtra(NoteActivity.NOTE_POSITION, position);
-//                startActivity(intent);
-//            }
-//        });
+        mRecyclerItems = (RecyclerView) findViewById(R.id.list_notes);
 
-        final RecyclerView recyclerNotes = (RecyclerView) findViewById(R.id.list_notes);
-        final LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
-        recyclerNotes.setLayoutManager(notesLayoutManager);
+        mNotesLayoutManager = new LinearLayoutManager(this);
+        mCourseLayoutManager = new GridLayoutManager(this, 2);
+
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this, notes);
-        recyclerNotes.setAdapter(mNoteRecyclerAdapter);
 
+        List<CourseInfo> courses = DataManager.getInstance().getCourses();
+        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, courses);
+
+
+        displayNotes();
+
+    }
+
+    private void displayCourses() {
+        mRecyclerItems.setLayoutManager(mCourseLayoutManager);
+        mRecyclerItems.setAdapter(mCourseRecyclerAdapter);
+        selectNavigationMenuItem(R.id.nav_courses);
+    }
+
+    private void displayNotes() {
+        mRecyclerItems.setLayoutManager(mNotesLayoutManager);
+        mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
+
+        selectNavigationMenuItem(R.id.nav_notes);
+    }
+
+    private void selectNavigationMenuItem(int id) {
+        Menu menu = mNavigationView.getMenu();
+        menu.findItem(id).setChecked(true);
     }
 
     @Override
@@ -111,21 +125,20 @@ public class NoteListActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.nav_courses:
-                handleSelection("Courses");
-
-                break;
             case R.id.nav_notes:
-                handleSelection("Notes");
+                displayNotes();
+                break;
+
+            case R.id.nav_courses:
+                displayCourses();
                 break;
         }
 
-
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 
     private void handleSelection(String message) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
         Snackbar.make(mNavigationView, message, Snackbar.LENGTH_SHORT).show();
     }
 
