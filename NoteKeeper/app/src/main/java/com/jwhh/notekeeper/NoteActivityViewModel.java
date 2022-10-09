@@ -2,6 +2,7 @@ package com.jwhh.notekeeper;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 
 public class NoteActivityViewModel extends ViewModel {
@@ -14,13 +15,13 @@ public class NoteActivityViewModel extends ViewModel {
     public String mOriginalNoteText;
     public boolean mIsNewlyCreated = true;
 
-    public void saveState(Bundle outState) {
+    public void saveState(@NonNull Bundle outState) {
         outState.putString(ORIGINAL_NOTE_COURSE_ID, mOriginalNoteCourseId);
         outState.putString(ORIGINAL_NOTE_TITLE, mOriginalNoteTitle);
         outState.putString(ORIGINAL_NOTE_TEXT, mOriginalNoteText);
     }
 
-    public void restoreState(Bundle inState) {
+    public void restoreState(@NonNull Bundle inState) {
         mOriginalNoteCourseId = inState.getString(ORIGINAL_NOTE_COURSE_ID);
         mOriginalNoteTitle = inState.getString(ORIGINAL_NOTE_TITLE);
         mOriginalNoteText = inState.getString(ORIGINAL_NOTE_TEXT);

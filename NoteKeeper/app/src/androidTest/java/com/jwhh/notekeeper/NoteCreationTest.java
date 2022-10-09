@@ -9,7 +9,6 @@ import androidx.test.rule.ActivityTestRule;
 
 import junit.framework.TestCase;
 
-import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,11 +18,15 @@ import static androidx.test.espresso.Espresso.*;
 import static androidx.test.espresso.action.ViewActions.*;
 import static androidx.test.espresso.matcher.ViewMatchers.*;
 import static androidx.test.espresso.assertion.ViewAssertions.*;
-import static org.hamcrest.Matcher.*;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+
+import com.jwhh.notekeeper.data.model.CourseInfo;
+import com.jwhh.notekeeper.data.model.DataManager;
+import com.jwhh.notekeeper.data.model.NoteInfo;
+import com.jwhh.notekeeper.ui.screens.NoteListActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class NoteCreationTest extends TestCase {

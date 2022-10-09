@@ -39,7 +39,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/text_course"
                 app:srcCompat="@drawable/ic_baseline_file_copy_24"
-                app:tint="@color/orange" />
+                app:tint="@color/aqua" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

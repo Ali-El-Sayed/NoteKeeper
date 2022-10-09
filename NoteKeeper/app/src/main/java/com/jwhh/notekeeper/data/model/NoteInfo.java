@@ -1,4 +1,4 @@
-package com.jwhh.notekeeper;
+package com.jwhh.notekeeper.data.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

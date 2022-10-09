@@ -1,4 +1,4 @@
-package com.jwhh.notekeeper;
+package com.jwhh.notekeeper.ui.screens;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,6 +6,13 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.jwhh.notekeeper.SettingsActivity;
+import com.jwhh.notekeeper.ui.adapters.CourseRecyclerAdapter;
+import com.jwhh.notekeeper.ui.adapters.NoteRecyclerAdapter;
+import com.jwhh.notekeeper.R;
+import com.jwhh.notekeeper.data.model.CourseInfo;
+import com.jwhh.notekeeper.data.model.DataManager;
+import com.jwhh.notekeeper.data.model.NoteInfo;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,13 +47,13 @@ public class NoteListActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_list);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.myToolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         mNavBarImage = findViewById(R.id.nav_drawer_image);
-
-        mNavigationView = (NavigationView) findViewById(R.id.nav_view);
+        mNavigationView = findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(this);
 
         mNavBarImage.setOnClickListener(new View.OnClickListener() {
@@ -55,7 +62,6 @@ public class NoteListActivity extends AppCompatActivity
                 mDrawerLayout.openDrawer(GravityCompat.START);
             }
         });
-
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,6 +75,29 @@ public class NoteListActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_option, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.optionSettings: {
+
+                startActivity(new Intent(NoteListActivity.this, SettingsActivity.class));
+                break;
+            }
+            default:
+                break;
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onBackPressed() {
         if (mDrawerLayout.isOpen())
             mDrawerLayout.closeDrawers();
@@ -79,12 +108,11 @@ public class NoteListActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-//        mAdapterNotes.notifyDataSetChanged();
         mNoteRecyclerAdapter.notifyDataSetChanged();
     }
 
     private void initializeDisplayContent() {
-        mRecyclerItems = (RecyclerView) findViewById(R.id.list_notes);
+        mRecyclerItems = findViewById(R.id.list_notes);
 
         mNotesLayoutManager = new LinearLayoutManager(this);
         mCourseLayoutManager = new GridLayoutManager(this,

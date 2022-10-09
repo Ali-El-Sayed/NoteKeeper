@@ -30,7 +30,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_assignment"
-                app:tint="@color/orange" />
+                app:tint="@color/aqua" />
 
             <TextView
                 android:id="@+id/text_course"

@@ -1,4 +1,6 @@
-package com.jwhh.notekeeper;
+package com.jwhh.notekeeper.data.model;
+
+import com.jwhh.notekeeper.ModuleInfo;
 
 import java.util.ArrayList;
 import java.util.List;

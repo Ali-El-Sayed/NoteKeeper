@@ -8,6 +8,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.jwhh.notekeeper.data.model.CourseInfo;
+import com.jwhh.notekeeper.data.model.DataManager;
+import com.jwhh.notekeeper.data.model.NoteInfo;
+
 public class DataManagerTest {
     private static DataManager sDataManager;
 

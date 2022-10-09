@@ -1,4 +1,4 @@
-package com.jwhh.notekeeper;
+package com.jwhh.notekeeper.ui.screens;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,8 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,6 +14,12 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.jwhh.notekeeper.NoteActivityViewModel;
+import com.jwhh.notekeeper.R;
+import com.jwhh.notekeeper.data.model.CourseInfo;
+import com.jwhh.notekeeper.data.model.DataManager;
+import com.jwhh.notekeeper.data.model.NoteInfo;
 
 import java.util.List;
 
@@ -112,7 +116,6 @@ public class NoteActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_note, menu);
         return true;
     }

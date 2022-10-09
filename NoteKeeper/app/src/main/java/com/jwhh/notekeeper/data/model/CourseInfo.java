@@ -1,8 +1,9 @@
-package com.jwhh.notekeeper;
+package com.jwhh.notekeeper.data.model;
 
-import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.jwhh.notekeeper.ModuleInfo;
 
 import java.util.ArrayList;
 import java.util.List;

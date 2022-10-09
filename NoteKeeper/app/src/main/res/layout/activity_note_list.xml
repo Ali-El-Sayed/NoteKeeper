@@ -5,18 +5,21 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".NoteListActivity">
+    android:fitsSystemWindows="true"
+    tools:context=".ui.screens.NoteListActivity">
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-
-        <LinearLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/myToolbar"
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
             android:background="@color/colorPrimary"
-            android:orientation="horizontal"
+            android:elevation="4dp"
+            android:theme="@style/App.ToolbarTitleTex"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -38,7 +41,7 @@
                 android:textSize="20sp"
                 android:textStyle="normal" />
 
-        </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
 
         <include layout="@layout/content_note_list" />
 
