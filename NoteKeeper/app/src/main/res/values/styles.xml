@@ -9,7 +9,6 @@
     </style>
 
 
-
     <style name="courseTitle" parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/aqua</item>
         <item name="android:textStyle">bold</item>

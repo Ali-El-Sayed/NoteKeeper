@@ -1,4 +1,4 @@
-package com.jwhh.notekeeper;
+package com.jwhh.notekeeper.data.database;
 
 public final class NoteKeeperDatabaseContract {
 

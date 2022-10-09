@@ -1,23 +1,40 @@
 package com.jwhh.notekeeper;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+
+import java.util.List;
 
 public class SettingsActivity extends AppCompatActivity implements
         PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     private static final String TITLE_TAG = "settingsActivityTitle";
+    private ImageButton btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
+
+        btnBack = findViewById(R.id.btnSettings_back);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
@@ -26,19 +43,7 @@ public class SettingsActivity extends AppCompatActivity implements
         } else {
             setTitle(savedInstanceState.getCharSequence(TITLE_TAG));
         }
-        getSupportFragmentManager().addOnBackStackChangedListener(
-                new FragmentManager.OnBackStackChangedListener() {
-                    @Override
-                    public void onBackStackChanged() {
-                        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                            setTitle(R.string.title_activity_settings);
-                        }
-                    }
-                });
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+
     }
 
     @Override
@@ -56,6 +61,12 @@ public class SettingsActivity extends AppCompatActivity implements
         return super.onSupportNavigateUp();
     }
 
+
+    // Called when the user has clicked on a preference
+    // that has a fragment class name associated with it.
+
+    //caller The fragment requesting navigation
+    //prefThe The preference requesting the fragment
     @Override
     public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
         // Instantiate the new Fragment
@@ -70,23 +81,50 @@ public class SettingsActivity extends AppCompatActivity implements
                 .replace(R.id.settings, fragment)
                 .addToBackStack(null)
                 .commit();
-        setTitle(pref.getTitle());
         return true;
     }
 
+
+    //Preferences' classes
     public static class HeaderFragment extends PreferenceFragmentCompat {
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.header_preferences, rootKey);
         }
+
+
     }
 
     public static class MessagesFragment extends PreferenceFragmentCompat {
 
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.messages_preferences, rootKey);
+            ListPreference mListPreference = findPreference("reply");
+            EditTextPreference mEditTextPreference = findPreference("signature");
+
+            if (mListPreference.getValue().equals("reply_all"))
+                mEditTextPreference.setVisible(true);
+            else
+                mEditTextPreference.setVisible(false);
+            mListPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    EditTextPreference mEditTextPreference = findPreference("signature");
+
+                    if (newValue.equals("reply_all"))
+                        mEditTextPreference.setVisible(true);
+                    else
+                        mEditTextPreference.setVisible(false);
+
+                    Log.d("newValueALi", "onPreferenceChange: " + newValue);
+                    Log.d("newValueALi", "onPreferenceChange: " + mEditTextPreference);
+                    return true;
+                }
+            });
+
         }
     }
 
