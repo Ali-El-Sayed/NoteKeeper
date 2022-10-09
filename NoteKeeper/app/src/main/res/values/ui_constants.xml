@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="nav_header_height">160dp</dimen>
+    <integer name="course_grid_span">2</integer>
 </resources>

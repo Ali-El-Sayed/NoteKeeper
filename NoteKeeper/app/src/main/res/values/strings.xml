@@ -20,4 +20,6 @@
 
     <string name="menu_notes">Notes</string>
     <string name="menu_courses">Courses</string>
+    <string name="note_title_hint">Note Title</string>
+    <string name="note_text_hint">Note Text</string>
 </resources>

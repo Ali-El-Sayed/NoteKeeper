@@ -36,8 +36,6 @@ public class NoteListActivity extends AppCompatActivity
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private GridLayoutManager mCourseLayoutManager;
 
-    //    private ArrayAdapter<NoteInfo> mAdapterNotes;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +87,8 @@ public class NoteListActivity extends AppCompatActivity
         mRecyclerItems = (RecyclerView) findViewById(R.id.list_notes);
 
         mNotesLayoutManager = new LinearLayoutManager(this);
-        mCourseLayoutManager = new GridLayoutManager(this, 2);
+        mCourseLayoutManager = new GridLayoutManager(this,
+                getResources().getInteger(R.integer.course_grid_span));
 
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this, notes);

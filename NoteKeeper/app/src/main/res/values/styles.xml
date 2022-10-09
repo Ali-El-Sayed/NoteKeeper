@@ -17,4 +17,14 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+
+    <style name="courseTitle" parent="@style/TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/orange</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="fab" parent="@style/Widget.Design.FloatingActionButton">
+        <item name="srcCompat">@drawable/ic_add_circle</item>
+        <item name="android:tint">@android:color/white</item>
+    </style>
 </resources>
