@@ -1,6 +1,7 @@
 package com.jwhh.notekeeper.ui.screens;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -21,10 +22,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -50,6 +53,7 @@ public class NoteListActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.myToolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mNavBarImage = findViewById(R.id.nav_drawer_image);
@@ -77,7 +81,22 @@ public class NoteListActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.menu_option, menu);
+        updateNavHeader();
         return true;
+    }
+
+    private void updateNavHeader() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        TextView textUserName = headerView.findViewById(R.id.userName);
+        TextView textUserEmail = headerView.findViewById(R.id.userEmail);
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String userName = pref.getString("user_display_name", "Note Keeper");
+        String userEmail = pref.getString("user_email_address", "name@host.com");
+
+        textUserName.setText(userName);
+        textUserEmail.setText(userEmail);
     }
 
     @Override
@@ -159,10 +178,20 @@ public class NoteListActivity extends AppCompatActivity
             case R.id.nav_courses:
                 displayCourses();
                 break;
+            case R.id.nav_share:
+                handleShare();
+                break;
         }
 
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void handleShare() {
+        Snackbar.make(mNavigationView, "Share To - " +
+                        PreferenceManager.getDefaultSharedPreferences(this).getString("favourite_social_network", ""),
+                Snackbar.LENGTH_SHORT).show();
+
     }
 
     private void handleSelection(String message) {

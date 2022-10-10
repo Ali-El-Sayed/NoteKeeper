@@ -1,20 +1,14 @@
 package com.jwhh.notekeeper;
 
-import android.os.Bundle;
-import android.util.Log;
+import android.os.Bundle;;
 import android.view.View;
 import android.widget.ImageButton;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.preference.EditTextPreference;
-import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
-
-import java.util.List;
+import androidx.preference.PreferenceManager;
 
 public class SettingsActivity extends AppCompatActivity implements
         PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
@@ -34,7 +28,6 @@ public class SettingsActivity extends AppCompatActivity implements
                 onBackPressed();
             }
         });
-
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
@@ -96,34 +89,13 @@ public class SettingsActivity extends AppCompatActivity implements
 
     }
 
-    public static class MessagesFragment extends PreferenceFragmentCompat {
+    public static class GeneralFragment extends PreferenceFragmentCompat {
 
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            setPreferencesFromResource(R.xml.messages_preferences, rootKey);
-            ListPreference mListPreference = findPreference("reply");
-            EditTextPreference mEditTextPreference = findPreference("signature");
+            setPreferencesFromResource(R.xml.general_preferences, rootKey);
 
-            if (mListPreference.getValue().equals("reply_all"))
-                mEditTextPreference.setVisible(true);
-            else
-                mEditTextPreference.setVisible(false);
-            mListPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    EditTextPreference mEditTextPreference = findPreference("signature");
-
-                    if (newValue.equals("reply_all"))
-                        mEditTextPreference.setVisible(true);
-                    else
-                        mEditTextPreference.setVisible(false);
-
-                    Log.d("newValueALi", "onPreferenceChange: " + newValue);
-                    Log.d("newValueALi", "onPreferenceChange: " + mEditTextPreference);
-                    return true;
-                }
-            });
 
         }
     }

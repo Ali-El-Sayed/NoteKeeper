@@ -4,10 +4,20 @@
     <item
         android:id="@+id/nav_notes"
         android:icon="@drawable/ic_notes_24"
-        android:title="@string/menu_notes"
-        />
+        android:title="@string/menu_notes" />
     <item
         android:id="@+id/nav_courses"
         android:icon="@drawable/ic_courses_24"
         android:title="@string/menu_courses" />
+
+    <item
+        android:id="@+id/nav_communications"
+        android:title="Communications">
+        <menu>
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@drawable/ic_share"
+                android:title="@string/menu_share" />
+        </menu>
+    </item>
 </menu>
