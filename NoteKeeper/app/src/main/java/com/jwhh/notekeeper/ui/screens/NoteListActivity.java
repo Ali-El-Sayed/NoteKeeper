@@ -2,12 +2,14 @@ package com.jwhh.notekeeper.ui.screens;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.jwhh.notekeeper.SettingsActivity;
+import com.jwhh.notekeeper.data.database.NoteKeeperDBOpenHelper;
 import com.jwhh.notekeeper.ui.adapters.CourseRecyclerAdapter;
 import com.jwhh.notekeeper.ui.adapters.NoteRecyclerAdapter;
 import com.jwhh.notekeeper.R;
@@ -45,6 +47,7 @@ public class NoteListActivity extends AppCompatActivity
     private LinearLayoutManager mNotesLayoutManager;
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private GridLayoutManager mCourseLayoutManager;
+    private NoteKeeperDBOpenHelper mDBOpenHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,7 @@ public class NoteListActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        mDBOpenHelper = new NoteKeeperDBOpenHelper(this);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mNavBarImage = findViewById(R.id.nav_drawer_image);
@@ -110,7 +114,6 @@ public class NoteListActivity extends AppCompatActivity
             }
             default:
                 break;
-
         }
 
         return super.onOptionsItemSelected(item);
@@ -148,6 +151,13 @@ public class NoteListActivity extends AppCompatActivity
 
     }
 
+    @Override
+    protected void onDestroy() {
+        mDBOpenHelper.close();
+        super.onDestroy();
+
+    }
+
     private void displayCourses() {
         mRecyclerItems.setLayoutManager(mCourseLayoutManager);
         mRecyclerItems.setAdapter(mCourseRecyclerAdapter);
@@ -158,7 +168,10 @@ public class NoteListActivity extends AppCompatActivity
         mRecyclerItems.setLayoutManager(mNotesLayoutManager);
         mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
 
-        selectNavigationMenuItem(R.id.nav_notes);
+        SQLiteDatabase db = mDBOpenHelper.getReadableDatabase();
+
+
+            selectNavigationMenuItem(R.id.nav_notes);
     }
 
     private void selectNavigationMenuItem(int id) {
