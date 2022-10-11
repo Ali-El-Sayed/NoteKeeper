@@ -127,6 +127,7 @@ public class NoteActivity extends AppCompatActivity {
         mViewModel.mOriginalNoteText = mNote.getText();
 
     }
+
     private void readDisplayStateValues() {
         Intent intent = getIntent();
         mNoteId = intent.getIntExtra(NOTE_ID, ID_NOT_SET); // ID_NOT_SET  for default value
@@ -162,6 +163,7 @@ public class NoteActivity extends AppCompatActivity {
         mSpinnerCourses.setSelection(courseIndex);
         mTextNoteTitle.setText(noteTitle);
         mTextNoteText.setText(noteText);
+        mNoteCursor.close();
 
     }
 
