@@ -134,6 +134,7 @@ public class NoteListActivity extends AppCompatActivity
     }
 
     private void initializeDisplayContent() {
+        DataManager.loadFromDatabase(mDBOpenHelper);
         mRecyclerItems = findViewById(R.id.list_notes);
 
         mNotesLayoutManager = new LinearLayoutManager(this);
@@ -168,10 +169,7 @@ public class NoteListActivity extends AppCompatActivity
         mRecyclerItems.setLayoutManager(mNotesLayoutManager);
         mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
 
-        SQLiteDatabase db = mDBOpenHelper.getReadableDatabase();
-
-
-            selectNavigationMenuItem(R.id.nav_notes);
+        selectNavigationMenuItem(R.id.nav_notes);
     }
 
     private void selectNavigationMenuItem(int id) {
