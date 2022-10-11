@@ -64,7 +64,9 @@ public class DataManager {
         final String[] NoteColumns = {
                 NoteInfoTable.COLUMN_COURSE_ID,
                 NoteInfoTable.COLUMN_NOTE_TITLE,
-                NoteInfoTable.COLUMN_NOTE_TEXT};
+                NoteInfoTable.COLUMN_NOTE_TEXT,
+                NoteInfoTable._ID
+        };
 
         final String noteOrderBy = NoteInfoTable.COLUMN_COURSE_ID + " , " +
                 NoteInfoTable.COLUMN_NOTE_TITLE;
@@ -76,6 +78,7 @@ public class DataManager {
         int NoteCourseIdPos = noteCursor.getColumnIndex(NoteInfoTable.COLUMN_COURSE_ID);
         int NoteTitlePos = noteCursor.getColumnIndex(NoteInfoTable.COLUMN_NOTE_TITLE);
         int NoteTextPos = noteCursor.getColumnIndex(NoteInfoTable.COLUMN_NOTE_TEXT);
+        int idPos = noteCursor.getColumnIndex(NoteInfoTable._ID);
 
         DataManager dm = DataManager.getInstance();
         dm.mNotes.clear();
@@ -84,9 +87,10 @@ public class DataManager {
             String noteCourseId = noteCursor.getString(NoteCourseIdPos);
             String noteTitle = noteCursor.getString(NoteTitlePos);
             String noteText = noteCursor.getString(NoteTextPos);
+            int id = noteCursor.getInt(idPos);
             CourseInfo courseInfo = dm.getCourse(noteCourseId);
 
-            NoteInfo noteInfo = new NoteInfo(courseInfo, noteTitle, noteText);
+            NoteInfo noteInfo = new NoteInfo(id, courseInfo, noteTitle, noteText);
             dm.mNotes.add(noteInfo);
         }
         noteCursor.close();

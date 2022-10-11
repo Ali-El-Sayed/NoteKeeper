@@ -1,6 +1,8 @@
 package com.jwhh.notekeeper.ui.screens;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,25 +19,40 @@ import android.widget.Toast;
 
 import com.jwhh.notekeeper.NoteActivityViewModel;
 import com.jwhh.notekeeper.R;
+import com.jwhh.notekeeper.data.database.NoteKeeperDBContract.NoteInfoTable;
+import com.jwhh.notekeeper.data.database.NoteKeeperDBOpenHelper;
 import com.jwhh.notekeeper.data.model.CourseInfo;
 import com.jwhh.notekeeper.data.model.DataManager;
 import com.jwhh.notekeeper.data.model.NoteInfo;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public class NoteActivity extends AppCompatActivity {
 
-    public static final String NOTE_POSITION = "com.jwhh.notekeeper.NOTE_INFO";
-    public static final int POSITION_NOT_SET = -1;
+    public static final String NOTE_ID = "com.jwhh.notekeeper.NOTE_INFO";
+    public static final int ID_NOT_SET = -1;
 
     private Spinner mSpinnerCourses;
     private EditText mTextNoteTitle;
     private EditText mTextNoteText;
-    private NoteInfo mNote;
+    private NoteInfo mNote = new NoteInfo(DataManager.getInstance().getCourses().get(0), "", "");
     private boolean mIsNewNote;
-    private int mNotePosition;
+    private int mNoteId;
     private boolean mIsCancelling;
     private NoteActivityViewModel mViewModel;
+    private NoteKeeperDBOpenHelper mDBOpenHelper;
+    private Cursor mNoteCursor;
+    private int mCourseIdPos;
+    private int mNoteTitlePos;
+    private int mNoteTextPos;
+
+    @Override
+    protected void onDestroy() {
+        mDBOpenHelper.close();
+        super.onDestroy();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,16 +61,17 @@ public class NoteActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mDBOpenHelper = new NoteKeeperDBOpenHelper(this);
+
+
         // Configuration changes
         ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
                 (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
         mViewModel = viewModelProvider.get(NoteActivityViewModel.class);
-
         if (mViewModel.mIsNewlyCreated && savedInstanceState != null)
             mViewModel.restoreState(savedInstanceState);
 
         mViewModel.mIsNewlyCreated = false;
-
         mSpinnerCourses = findViewById(R.id.spinner_courses);
 
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
@@ -67,10 +85,37 @@ public class NoteActivity extends AppCompatActivity {
 
         mTextNoteTitle = findViewById(R.id.text_note_title);
         mTextNoteText = findViewById(R.id.text_note_text);
-        if (!mIsNewNote) displayNote(mSpinnerCourses, mTextNoteTitle, mTextNoteText);
+
+        if (!mIsNewNote)
+            loadNoteData();
 
     }
 
+    private void loadNoteData() {
+        SQLiteDatabase db = mDBOpenHelper.getReadableDatabase();
+
+        String courseId = "android_intents";
+        String titleStart = "dynamic";
+
+        String selection = NoteInfoTable._ID + " = ? ";
+
+        String[] selectionArgs = {Integer.toString(mNoteId)};
+
+        String[] noteColumns = {
+                NoteInfoTable.COLUMN_COURSE_ID,
+                NoteInfoTable.COLUMN_NOTE_TITLE,
+                NoteInfoTable.COLUMN_NOTE_TEXT
+        };
+
+        mNoteCursor = db.query(NoteInfoTable.TABLE_NAME, noteColumns, selection, selectionArgs, null, null, null);
+
+        mCourseIdPos = mNoteCursor.getColumnIndex(NoteInfoTable.COLUMN_COURSE_ID);
+        mNoteTitlePos = mNoteCursor.getColumnIndex(NoteInfoTable.COLUMN_NOTE_TITLE);
+        mNoteTextPos = mNoteCursor.getColumnIndex(NoteInfoTable.COLUMN_NOTE_TEXT);
+
+        mNoteCursor.moveToNext();
+        displayNote();
+    }
 
 
     private void saveOriginalNoteValues() {
@@ -82,46 +127,52 @@ public class NoteActivity extends AppCompatActivity {
         mViewModel.mOriginalNoteText = mNote.getText();
 
     }
-
-
     private void readDisplayStateValues() {
-        /*
-        mNote = intent.getParcelableExtra(NOTE_POSITION);
-        mIsNewNote = mNote == null;
-        * */
         Intent intent = getIntent();
-        mNotePosition = intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET); // POSITION_NOT_SET  for default value
-        mIsNewNote = mNotePosition == POSITION_NOT_SET;
+        mNoteId = intent.getIntExtra(NOTE_ID, ID_NOT_SET); // ID_NOT_SET  for default value
+        mIsNewNote = mNoteId == ID_NOT_SET;
 
         if (mIsNewNote)
             createNewNote();
-
-        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
-
+//        mNote = DataManager.getInstance().getNotes().get(mNoteId);
     }
 
     private void createNewNote() {
         DataManager dm = DataManager.getInstance();
-        mNotePosition = dm.createNewNote();
+        mNoteId = dm.createNewNote();
     }
 
-    private void displayNote(Spinner spinner, EditText textNoteTitle, EditText textNoteText) {
+    private void displayNote() {
+        /*
+                    Before Database
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
         int courseIndex = courses.indexOf(mNote.getCourse());
+        mSpinnerCourses.setSelection(courseIndex);
+        mTextNoteTitle.setText(mNote.getTitle());
+        mTextNoteText.setText(mNote.getText());
+        * */
+        String courseId = mNoteCursor.getString(mCourseIdPos);
+        String noteTitle = mNoteCursor.getString(mNoteTitlePos);
+        String noteText = mNoteCursor.getString(mNoteTextPos);
 
-        spinner.setSelection(courseIndex);
-        textNoteTitle.setText(mNote.getTitle());
-        textNoteText.setText(mNote.getText());
+        List<CourseInfo> courses = DataManager.getInstance().getCourses();
+        CourseInfo course = DataManager.getInstance().getCourse(courseId);
+        int courseIndex = courses.indexOf(course);
+
+        mSpinnerCourses.setSelection(courseIndex);
+        mTextNoteTitle.setText(noteTitle);
+        mTextNoteText.setText(noteText);
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NotNull Menu menu) {
         getMenuInflater().inflate(R.menu.menu_note, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -147,18 +198,18 @@ public class NoteActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(@NonNull Menu menu) {
         MenuItem item = menu.findItem(R.id.action_next);
         int lastNoteIndex = DataManager.getInstance().getNotes().size() - 1;
-        item.setEnabled(mNotePosition < lastNoteIndex);
+        item.setEnabled(mNoteId < lastNoteIndex);
         return super.onPrepareOptionsMenu(menu);
     }
 
     private void moveNext() {
         saveNote();
         Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
-        ++mNotePosition;
-        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+        ++mNoteId;
+        mNote = DataManager.getInstance().getNotes().get(mNoteId);
 
 //        saveOriginalNoteValues();
-        displayNote(mSpinnerCourses, mTextNoteTitle, mTextNoteText);
+        displayNote();
         invalidateMenu();
     }
 
@@ -167,7 +218,7 @@ public class NoteActivity extends AppCompatActivity {
         super.onPause();
         if (mIsCancelling) {
             if (mIsNewNote)
-                DataManager.getInstance().removeNote(mNotePosition);
+                DataManager.getInstance().removeNote(mNoteId);
             else {
                 storePreviousNoteValues();
             }
@@ -179,11 +230,11 @@ public class NoteActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {//verify the bundle isn't a null
+    protected void onSaveInstanceState(@NotNull Bundle outState) {//verify the bundle isn't a null
         super.onSaveInstanceState(outState);
 
-        if (outState != null)
-            mViewModel.saveState(outState);
+
+        mViewModel.saveState(outState);
     }
 
     private void storePreviousNoteValues() {

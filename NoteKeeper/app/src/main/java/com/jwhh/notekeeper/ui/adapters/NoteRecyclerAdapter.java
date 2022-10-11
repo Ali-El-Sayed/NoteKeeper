@@ -16,7 +16,7 @@ import com.jwhh.notekeeper.ui.screens.NoteActivity;
 
 import java.util.List;
 
-public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapter.ViewHolder> {
+public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapter.DataHolder> {
     private static Context mContext;
     private final List<NoteInfo> mNotes;
     private final LayoutInflater mLayoutInflater;
@@ -29,18 +29,17 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public DataHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = mLayoutInflater.inflate(R.layout.item_note_list, parent, false);
-        return new ViewHolder(itemView);
+        return new DataHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull DataHolder holder, int position) {
         NoteInfo note = mNotes.get(position);
         holder.mTextCourse.setText(note.getCourse().getTitle());
         holder.mTextTitle.setText(note.getTitle());
-        // holder.getAdapterPosition()
-        holder.mCurrentPosition = position;
+        holder.mId = note.getId();
 
     }
 
@@ -49,22 +48,22 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
         return mNotes.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class DataHolder extends RecyclerView.ViewHolder {
 
 
         public final TextView mTextCourse;
         public final TextView mTextTitle;
-        public int mCurrentPosition;
+        public int mId;
 
-        public ViewHolder(View itemView) {
+        public DataHolder(View itemView) {
             super(itemView);
-            mTextCourse = (TextView) itemView.findViewById(R.id.text_course);
-            mTextTitle = (TextView) itemView.findViewById(R.id.text_title);
+            mTextCourse = itemView.findViewById(R.id.text_course);
+            mTextTitle = itemView.findViewById(R.id.text_title);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(mContext, NoteActivity.class);
-                    intent.putExtra(NoteActivity.NOTE_POSITION, mCurrentPosition);
+                    intent.putExtra(NoteActivity.NOTE_ID, mId);
                     mContext.startActivity(intent);
                 }
             });
