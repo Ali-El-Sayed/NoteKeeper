@@ -58,11 +58,6 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private boolean mCourseQueryFinished;
     private boolean mNoteQueryFinished;
 
-    @Override
-    protected void onDestroy() {
-        mDBOpenHelper.close();
-        super.onDestroy();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +99,39 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         if (!mIsNewNote)
 //            loadNoteData();
             LoaderManager.getInstance(this).initLoader(LOADER_NOTES, null, this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Start the Call from onCreateLoader
+        LoaderManager.getInstance(this).restartLoader(LOADER_NOTES, null, this);
+
+        // Start the Call from onLoaderFinished
+//        LoaderManager.getInstance(this).initLoader(LOADER_NOTES, null, this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mIsCancelling) {
+            if (mIsNewNote)
+                DataManager.getInstance().removeNote(mNoteId);
+            else {
+                storePreviousNoteValues();
+            }
+            Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show();
+        } else {
+            saveNote();
+            Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mDBOpenHelper.close();
+        super.onDestroy();
     }
 
     private void loadNoteData() {
@@ -262,26 +290,9 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (mIsCancelling) {
-            if (mIsNewNote)
-                DataManager.getInstance().removeNote(mNoteId);
-            else {
-                storePreviousNoteValues();
-            }
-            Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show();
-        } else {
-            saveNote();
-            Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NotNull Bundle outState) {//verify the bundle isn't a null
+    protected void onSaveInstanceState(@NotNull Bundle outState) {
+        //verify the bundle isn't a null
         super.onSaveInstanceState(outState);
-
-
         mViewModel.saveState(outState);
     }
 
@@ -297,6 +308,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         mNote.setText(mTextNoteText.getText().toString());
         mNote.setTitle(mTextNoteTitle.getText().toString());
     }
+
 
     private void sendEmail() {
         CourseInfo course = (CourseInfo) mSpinnerCourses.getSelectedItem();
@@ -325,6 +337,28 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
             loader = createLoaderCourses();
 
         return loader;
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        //when data is finished
+        if (loader.getId() == LOADER_NOTES)
+            loadFinishedNotes(data);
+        else if (loader.getId() == LOADER_COURSES) {
+            mAdapterCourses.changeCursor(data);
+            mCourseQueryFinished = true;
+            displayNoteWhenQueryFinished();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        //clean up
+        if (loader.getId() == LOADER_NOTES) {
+            if (mNoteCursor != null)
+                mNoteCursor.close();
+        } else if (loader.getId() == LOADER_COURSES)
+            mAdapterCourses.getCursor().close();
     }
 
     private CursorLoader createLoaderCourses() {
@@ -375,19 +409,6 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         };
     }
 
-    @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        //when data is finished
-        if (loader.getId() == LOADER_NOTES)
-            loadFinishedNotes(data);
-        else if (loader.getId() == LOADER_COURSES) {
-            mAdapterCourses.changeCursor(data);
-            mCourseQueryFinished = true;
-            displayNoteWhenQueryFinished();
-        }
-    }
-
-
     private void loadFinishedNotes(Cursor data) {
         mNoteCursor = data;
         mCourseIdPos = mNoteCursor.getColumnIndex(NoteInfoTable.COLUMN_COURSE_ID);
@@ -401,15 +422,5 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private void displayNoteWhenQueryFinished() {
         if (mNoteQueryFinished && mCourseQueryFinished)
             displayNote();
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-        //clean up
-        if (loader.getId() == LOADER_NOTES) {
-            if (mNoteCursor != null)
-                mNoteCursor.close();
-        } else if (loader.getId() == LOADER_COURSES)
-            mAdapterCourses.getCursor().close();
     }
 }
