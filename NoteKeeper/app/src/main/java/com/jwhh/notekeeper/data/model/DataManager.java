@@ -42,7 +42,7 @@ public class DataManager {
 
         Cursor courseCursor = db.query(CourseInfoTable.TABLE_NAME,
                 courseColumns,
-                null, null, null, null, CourseInfoTable.COLUMN_COURSE_TITLE);
+                null, null, null, null, null);
 
         int courseIdPos = courseCursor.getColumnIndex(CourseInfoTable.COLUMN_COURSE_ID);
         int courseTitlePos = courseCursor.getColumnIndex(CourseInfoTable.COLUMN_COURSE_TITLE);

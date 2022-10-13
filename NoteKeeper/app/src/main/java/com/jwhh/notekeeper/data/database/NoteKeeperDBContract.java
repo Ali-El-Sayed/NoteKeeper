@@ -12,7 +12,7 @@ public final class NoteKeeperDBContract {
 
         public static final String SQL_CREATE_TABLE =
                 " CREATE TABLE " + TABLE_NAME + " ( " +
-                        _ID + "INTEGER PRIMARY KEY, " +
+                        _ID + " INTEGER PRIMARY KEY, " +
                         COLUMN_COURSE_ID + " TEXT UNIQUE NOT NULL, " +
                         COLUMN_COURSE_TITLE + " TEXT NOT NULL) ";
     }
