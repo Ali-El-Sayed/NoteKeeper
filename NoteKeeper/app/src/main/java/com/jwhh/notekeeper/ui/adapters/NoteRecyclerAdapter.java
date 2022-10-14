@@ -1,5 +1,7 @@
 package com.jwhh.notekeeper.ui.adapters;
 
+import static com.jwhh.notekeeper.data.database.NoteKeeperDBContract.*;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -12,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jwhh.notekeeper.R;
+import com.jwhh.notekeeper.data.database.NoteKeeperDBContract;
 import com.jwhh.notekeeper.data.database.NoteKeeperDBContract.NoteInfoTable;
 import com.jwhh.notekeeper.ui.screens.NoteActivity;
 
@@ -34,12 +37,12 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
         populateColumnsPosition();
     }
 
+    // get Columns Indexes in Cursor
     private void populateColumnsPosition() {
         if (mCursor == null)
             return;
-        // Get Column Indexes from mCursor
 
-        mCoursePos = mCursor.getColumnIndex(NoteInfoTable.COLUMN_COURSE_ID);
+        mCoursePos = mCursor.getColumnIndex(CourseInfoTable.COLUMN_COURSE_TITLE);
         mNoteTitlePos = mCursor.getColumnIndex(NoteInfoTable.COLUMN_NOTE_TITLE);
         mIdPos = mCursor.getColumnIndex(NoteInfoTable._ID);
     }
