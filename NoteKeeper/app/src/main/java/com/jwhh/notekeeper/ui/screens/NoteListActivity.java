@@ -45,7 +45,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class NoteListActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int LOADER_NOTES = 0;
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
@@ -71,7 +71,28 @@ public class NoteListActivity extends AppCompatActivity
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mNavBarImage = findViewById(R.id.nav_drawer_image);
         mNavigationView = findViewById(R.id.nav_view);
-        mNavigationView.setNavigationItemSelectedListener(this);
+        mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+
+                switch (id) {
+                    case R.id.nav_notes:
+                        displayNotes();
+                        break;
+
+                    case R.id.nav_courses:
+                        displayCourses();
+                        break;
+                    case R.id.nav_share:
+                        handleShare();
+                        break;
+                }
+
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
 
         mNavBarImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -207,26 +228,26 @@ public class NoteListActivity extends AppCompatActivity
         menu.findItem(id).setChecked(true);
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.nav_notes:
-                displayNotes();
-                break;
-
-            case R.id.nav_courses:
-                displayCourses();
-                break;
-            case R.id.nav_share:
-                handleShare();
-                break;
-        }
-
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
+//    @Override
+//    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+//        int id = item.getItemId();
+//
+//        switch (id) {
+//            case R.id.nav_notes:
+//                displayNotes();
+//                break;
+//
+//            case R.id.nav_courses:
+//                displayCourses();
+//                break;
+//            case R.id.nav_share:
+//                handleShare();
+//                break;
+//        }
+//
+//        mDrawerLayout.closeDrawer(GravityCompat.START);
+//        return true;
+//    }
 
     private void handleShare() {
         Snackbar.make(mNavigationView, "Share To - " +
