@@ -49,7 +49,6 @@ public class NoteListActivity extends AppCompatActivity
 
     public static final int LOADER_NOTES = 0;
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
-    private ImageButton mNavBarImage;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private RecyclerView mRecyclerItems;
@@ -69,7 +68,7 @@ public class NoteListActivity extends AppCompatActivity
         mDBOpenHelper = new NoteKeeperDBOpenHelper(this);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        mNavBarImage = findViewById(R.id.nav_drawer_image);
+        ImageButton navBarImage = findViewById(R.id.nav_drawer_image);
         mNavigationView = findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -94,7 +93,7 @@ public class NoteListActivity extends AppCompatActivity
             }
         });
 
-        mNavBarImage.setOnClickListener(new View.OnClickListener() {
+        navBarImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mDrawerLayout.openDrawer(GravityCompat.START);

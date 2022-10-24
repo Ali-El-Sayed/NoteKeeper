@@ -1,10 +1,10 @@
 package com.jwhh.notekeeper.ui.screens;
 
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -68,7 +68,6 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mDBOpenHelper = new NoteKeeperDBOpenHelper(this);
 
-
         // Configuration changes
         ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
                 (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
@@ -117,15 +116,28 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onPause();
         if (mIsCancelling) {
             if (mIsNewNote)
-                DataManager.getInstance().removeNote(mNoteId);
+                // DataManager.getInstance().removeNote(mNoteId);
+                deleteNoteFromDatabase();
             else {
                 storePreviousNoteValues();
             }
             Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show();
-        } else {
+        } else
             saveNote();
-            Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
-        }
+
+    }
+
+    private void deleteNoteFromDatabase() {
+        String selection = NoteInfoTable._ID + " = ?";
+        String[] selectionArgs = {Integer.toString(mNoteId)};
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SQLiteDatabase db = mDBOpenHelper.getWritableDatabase();
+                db.delete(NoteInfoTable.TABLE_NAME, selection, selectionArgs);
+            }
+        }).start();
+        Toast.makeText(this, "Note Ignored", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -195,8 +207,16 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void createNewNote() {
-        DataManager dm = DataManager.getInstance();
-        mNoteId = dm.createNewNote();
+//        DataManager dm = DataManager.getInstance();
+//        mNoteId = dm.createNewNote();
+
+        ContentValues values = new ContentValues();
+        values.put(NoteInfoTable.COLUMN_COURSE_ID, "");
+        values.put(NoteInfoTable.COLUMN_NOTE_TITLE, "");
+        values.put(NoteInfoTable.COLUMN_NOTE_TEXT, "");
+
+        SQLiteDatabase db = mDBOpenHelper.getWritableDatabase();
+        mNoteId = (int) db.insert(NoteInfoTable.TABLE_NAME, null, values);
     }
 
     private void displayNote() {
@@ -224,18 +244,19 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
     }
 
+
     private int getIndexOfCourseId(String courseId) {
+        if (mIsNewNote)
+            return 0;
         Cursor cursor = mAdapterCourses.getCursor();
         int courseIdPos = cursor.getColumnIndex(CourseInfoTable.COLUMN_COURSE_ID);
         int courseRowIndex = 0;
 
-        boolean more = cursor.moveToFirst();
-        while (more) {
+        while (cursor.moveToNext()) {
             String cursorCourseId = cursor.getString(courseIdPos);
             if (cursorCourseId.equals(courseId))
                 break;
             courseRowIndex++;
-            cursor.moveToNext();
         }
 
         return courseRowIndex;
@@ -304,11 +325,42 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void saveNote() {
-        mNote.setCourse((CourseInfo) mSpinnerCourses.getSelectedItem());
-        mNote.setText(mTextNoteText.getText().toString());
-        mNote.setTitle(mTextNoteTitle.getText().toString());
+//        mNote.setCourse((CourseInfo) mSpinnerCourses.getSelectedItem());
+        String courseId = selectedCourseId();
+        String noteText = mTextNoteText.getText().toString();
+        String noteTitle = mTextNoteTitle.getText().toString();
+        if (noteText.equals("") && noteTitle.equals("")) {
+            deleteNoteFromDatabase();
+            return;
+        }
+
+        saveNoteToDatabase(courseId, noteTitle, noteText);
+        Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
     }
 
+    private String selectedCourseId() {
+        // get courseId from Spinner
+        int selectedId = mSpinnerCourses.getSelectedItemPosition();
+        Cursor cursor = mAdapterCourses.getCursor();
+        cursor.moveToPosition(selectedId);
+        int courseTitle = cursor.getColumnIndex(CourseInfoTable.COLUMN_COURSE_ID);
+
+        return cursor.getString(courseTitle);
+    }
+
+    private void saveNoteToDatabase(String courseId, String noteTitle, String noteText) {
+        String selection = NoteInfoTable._ID + " = ?";
+        String[] selectionArgs = {Integer.toString(mNoteId)};
+
+        ContentValues values = new ContentValues();
+        values.put(NoteInfoTable.COLUMN_COURSE_ID, courseId);
+        values.put(NoteInfoTable.COLUMN_NOTE_TITLE, noteTitle);
+        values.put(NoteInfoTable.COLUMN_NOTE_TEXT, noteText);
+
+        SQLiteDatabase db = mDBOpenHelper.getWritableDatabase();
+        //returns the number of effected rows
+        db.update(NoteInfoTable.TABLE_NAME, values, selection, selectionArgs);
+    }
 
     private void sendEmail() {
         CourseInfo course = (CourseInfo) mSpinnerCourses.getSelectedItem();
