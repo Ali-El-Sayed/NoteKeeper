@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -414,24 +415,34 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private CursorLoader createLoaderCourses() {
-        mCourseQueryFinished = false;
-
-        return new CursorLoader(this) {
-            @Nullable
-            @Override
-            protected Cursor onLoadInBackground() {
-                SQLiteDatabase db = mDBOpenHelper.getReadableDatabase();
-                String[] courseColumns = {
-                        CourseInfoTable.COLUMN_COURSE_TITLE,
-                        CourseInfoTable.COLUMN_COURSE_ID,
-                        CourseInfoTable._ID,
-                };
-
-                return db.query(CourseInfoTable.TABLE_NAME, courseColumns,
-                        null, null, null, null, CourseInfoTable.COLUMN_COURSE_TITLE);
-
-            }
+        Uri uri = Uri.parse("content://com.jwhh.notekeeper.provider");
+        String[] courseColumns = {
+                CourseInfoTable.COLUMN_COURSE_TITLE,
+                CourseInfoTable.COLUMN_COURSE_ID,
+                CourseInfoTable._ID,
         };
+
+        return new CursorLoader(this, uri, courseColumns,
+                null, null, CourseInfoTable.COLUMN_COURSE_TITLE);
+
+//        mCourseQueryFinished = false;
+
+//        return new CursorLoader(this) {
+//            @Nullable
+//            @Override
+//            protected Cursor onLoadInBackground() {
+//                String[] courseColumns = {
+//                        CourseInfoTable.COLUMN_COURSE_TITLE,
+//                        CourseInfoTable.COLUMN_COURSE_ID,
+//                        CourseInfoTable._ID,
+//                };
+//                SQLiteDatabase db = mDBOpenHelper.getReadableDatabase();
+//
+//                return db.query(CourseInfoTable.TABLE_NAME, courseColumns,
+//                        null, null, null, null, CourseInfoTable.COLUMN_COURSE_TITLE);
+//
+//            }
+//        };
     }
 
     private CursorLoader createLoaderNotes() {

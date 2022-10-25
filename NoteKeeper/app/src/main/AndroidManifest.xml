@@ -9,6 +9,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
+        <provider
+            android:name=".data.provider.NoteKeeperProvider"
+            android:authorities="com.jwhh.notekeeper.provider"
+            android:enabled="true"
+            android:exported="true" />
+
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
