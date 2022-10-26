@@ -1,18 +1,32 @@
 package com.jwhh.notekeeper.data.provider;
 
 import static com.jwhh.notekeeper.data.database.NoteKeeperDBContract.*;
+import static com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract.*;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.provider.BaseColumns;
 
 import com.jwhh.notekeeper.data.database.NoteKeeperDBOpenHelper;
 
 public class NoteKeeperProvider extends ContentProvider {
 
     private NoteKeeperDBOpenHelper mDBOpenHelper;
+    private static UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    public static final int COURSES = 0;
+    public static final int NOTES = 1;
+    public static final int NOTES_EXPANDED = 2;
+
+    static {
+        sUriMatcher.addURI(AUTHORITY, Courses.PATH, COURSES);
+        sUriMatcher.addURI(AUTHORITY, Notes.PATH, NOTES);
+        sUriMatcher.addURI(AUTHORITY, Notes.PATH_EXPANDED, NOTES_EXPANDED);
+    }
 
     public NoteKeeperProvider() {
     }
@@ -48,10 +62,44 @@ public class NoteKeeperProvider extends ContentProvider {
 
         Cursor cursor = null;
         SQLiteDatabase db = mDBOpenHelper.getReadableDatabase();
-        cursor = db.query(CourseInfoTable.TABLE_NAME, projection, selection, selectionArgs,
-                null, null, sortOrder);
+
+        int uriMatch = sUriMatcher.match(uri);
+
+        switch (uriMatch) {
+            case COURSES: {
+                cursor = db.query(CourseInfoTable.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
+            }
+            case NOTES: {
+                cursor = db.query(NoteInfoTable.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
+            }
+            case NOTES_EXPANDED: {
+                cursor = notesExpandedQuery(db, projection, selection, selectionArgs, sortOrder);
+                break;
+            }
+        }
+
         return cursor;
     }
+
+    private Cursor notesExpandedQuery(SQLiteDatabase db, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        String tablesWithJoin = NoteInfoTable.TABLE_NAME + " JOIN " +
+                CourseInfoTable.TABLE_NAME + " ON " +
+                NoteInfoTable.getQName(NoteInfoTable.COLUMN_COURSE_ID) + " = " +
+                CourseInfoTable.getQName(CourseInfoTable.COLUMN_COURSE_ID);
+
+        String[] columns = new String[projection.length];
+        for (int idx = 0; idx < projection.length; idx++)
+            columns[idx] = projection[idx].equals(BaseColumns._ID) ||
+                    projection[idx].equals(NoteInfoTable.COLUMN_COURSE_ID) ?
+                    NoteInfoTable.getQName(projection[idx]) : projection[idx];
+
+        return db.query(tablesWithJoin, columns, selection, selectionArgs, null, null, sortOrder);
+    }
+
 
     @Override
     public int update(Uri uri, ContentValues values, String selection,

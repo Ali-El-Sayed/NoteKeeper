@@ -1,6 +1,8 @@
 package com.jwhh.notekeeper.ui.screens;
 
 
+import static com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract.*;
+
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -32,6 +34,7 @@ import com.jwhh.notekeeper.data.database.NoteKeeperDBOpenHelper;
 import com.jwhh.notekeeper.data.model.CourseInfo;
 import com.jwhh.notekeeper.data.model.DataManager;
 import com.jwhh.notekeeper.data.model.NoteInfo;
+import com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -415,15 +418,14 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private CursorLoader createLoaderCourses() {
-        Uri uri = Uri.parse("content://com.jwhh.notekeeper.provider");
+        Uri uri = Courses.CONTENT_URI;
         String[] courseColumns = {
-                CourseInfoTable.COLUMN_COURSE_TITLE,
-                CourseInfoTable.COLUMN_COURSE_ID,
-                CourseInfoTable._ID,
+                Courses.COLUMN_COURSE_TITLE,
+                Courses.COLUMN_COURSE_ID,
+                Courses._ID,
         };
 
-        return new CursorLoader(this, uri, courseColumns,
-                null, null, CourseInfoTable.COLUMN_COURSE_TITLE);
+        return new CursorLoader(this, uri, courseColumns, null, null, Courses.COLUMN_COURSE_TITLE);
 
 //        mCourseQueryFinished = false;
 

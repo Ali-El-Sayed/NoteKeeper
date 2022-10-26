@@ -48,7 +48,7 @@ public final class NoteKeeperDBContract {
                         COLUMN_COURSE_ID + " TEXT NOT NULL ) ";
 
 
-        public static final String getQName(String columnName) {
+        public static String getQName(String columnName) {
             return TABLE_NAME + "." + columnName;
         }
 
