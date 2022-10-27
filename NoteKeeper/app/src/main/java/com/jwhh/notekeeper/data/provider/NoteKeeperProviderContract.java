@@ -22,12 +22,12 @@ public class NoteKeeperProviderContract {
 
     protected interface NotesColumns {
         public static final String COLUMN_NOTE_TITLE = "note_title";
-        public static final String COLUMN_NOTE_TEXT = "course_text";
+        public static final String COLUMN_NOTE_TEXT = "note_text";
     }
 
     public static final class Courses implements CoursesColumns, BaseColumns, CoursesIdColumns {
         public static final String PATH = "courses";
-        //content://com.jwhh.notekeeper.provider/courses"
+        //content://com.jwhh.notekeeper.provider/courses
         public static final Uri CONTENT_URI = Uri.withAppendedPath(AUTHORITY_URI, PATH);
     }
 

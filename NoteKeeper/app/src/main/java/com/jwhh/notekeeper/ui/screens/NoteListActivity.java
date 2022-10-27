@@ -191,7 +191,7 @@ public class NoteListActivity extends AppCompatActivity
         mCourseLayoutManager = new GridLayoutManager(this,
                 getResources().getInteger(R.integer.course_grid_span));
 
-        List<NoteInfo> notes = DataManager.getInstance().getNotes();
+//        List<NoteInfo> notes = DataManager.getInstance().getNotes();
 //        mNoteRecyclerAdapter = new NoteRecyclerAdapter(this, notes);
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this, null);
 
