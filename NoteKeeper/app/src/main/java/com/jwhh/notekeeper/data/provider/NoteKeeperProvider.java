@@ -4,6 +4,7 @@ import static com.jwhh.notekeeper.data.database.NoteKeeperDBContract.*;
 import static com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract.*;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -16,6 +17,7 @@ import com.jwhh.notekeeper.data.database.NoteKeeperDBOpenHelper;
 
 public class NoteKeeperProvider extends ContentProvider {
 
+    public static final String MIME_VENDOR_TYPE = "vnd." + AUTHORITY + ".";
     private NoteKeeperDBOpenHelper mDBOpenHelper;
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     public static final int COURSES = 0;
@@ -53,9 +55,36 @@ public class NoteKeeperProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        // TODO: Implement this to handle requests for the MIME type of the data
-        // at the given URI.
-        throw new UnsupportedOperationException("Not yet implemented");
+        // handle requests for the MIME type of the data t the given URI.
+        String mimeType = "";
+        int uriMatch = sUriMatcher.match(uri);
+
+        switch (uriMatch) {
+            case COURSES: {
+                //vnd.android.cursor.dir/vnd.com.jwhh.notekeeper.provider.courses
+                mimeType = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                        MIME_VENDOR_TYPE + Courses.PATH;
+                break;
+            }
+            case NOTES: {
+                mimeType = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                        MIME_VENDOR_TYPE + Notes.PATH;
+                break;
+            }
+            case NOTES_EXPANDED: {
+                mimeType = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                        MIME_VENDOR_TYPE + Notes.PATH_EXPANDED;
+                break;
+            }
+            case NOTES_ROW: {
+                mimeType = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
+                        MIME_VENDOR_TYPE + Notes.PATH;
+                break;
+            }
+        }
+
+        return mimeType;
+
     }
 
     @Override
@@ -153,7 +182,7 @@ public class NoteKeeperProvider extends ContentProvider {
             case COURSES:
                 break;
             case NOTES:
-                 break;
+                break;
             case NOTES_ROW: {
                 rows = db.update(NoteInfoTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
