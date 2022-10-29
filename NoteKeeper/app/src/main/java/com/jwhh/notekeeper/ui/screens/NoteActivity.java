@@ -264,7 +264,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(Notes.COLUMN_COURSE_ID, "android_intents");
         values.put(Notes.COLUMN_NOTE_TITLE, "");
         values.put(Notes.COLUMN_NOTE_TEXT, "");
-        task.execute(values);
+        task.execute(values );
         mNoteId = ContentUris.parseId(mNoteUri);
 //        SQLiteDatabase db = mDBOpenHelper.getWritableDatabase();
 //        mNoteId = (int) db.insert(NoteInfoTable.TABLE_NAME, null, values);

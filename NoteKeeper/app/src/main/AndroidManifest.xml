@@ -9,6 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
+        <service
+            android:name=".services.NoteBackupService"
+            android:exported="false" />
+
         <provider
             android:name=".data.provider.NoteKeeperProvider"
             android:authorities="com.jwhh.notekeeper.provider"

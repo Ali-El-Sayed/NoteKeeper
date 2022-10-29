@@ -15,13 +15,13 @@ import com.google.android.material.snackbar.Snackbar;
 import com.jwhh.notekeeper.BuildConfig;
 import com.jwhh.notekeeper.SettingsActivity;
 import com.jwhh.notekeeper.data.database.NoteKeeperDBOpenHelper;
-import com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract;
+import com.jwhh.notekeeper.services.NoteBackup;
+import com.jwhh.notekeeper.services.NoteBackupService;
 import com.jwhh.notekeeper.ui.adapters.CourseRecyclerAdapter;
 import com.jwhh.notekeeper.ui.adapters.NoteRecyclerAdapter;
 import com.jwhh.notekeeper.R;
 import com.jwhh.notekeeper.data.model.CourseInfo;
 import com.jwhh.notekeeper.data.model.DataManager;
-import com.jwhh.notekeeper.data.model.NoteInfo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -142,9 +142,13 @@ public class NoteListActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         switch (id) {
-            case R.id.optionSettings: {
+            case R.id.action_option_settings: {
 
                 startActivity(new Intent(NoteListActivity.this, SettingsActivity.class));
+                break;
+            }
+            case R.id.action_backup_notes: {
+                backupNotes();
                 break;
             }
             default:
@@ -152,6 +156,12 @@ public class NoteListActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void backupNotes() {
+        Intent intent = new Intent(NoteListActivity.this, NoteBackupService.class);
+        intent.putExtra(NoteBackupService.EXTRA_COURSE_ID, NoteBackup.ALL_COURSES);
+        startService(intent);
     }
 
     @Override
@@ -165,7 +175,7 @@ public class NoteListActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        openDrawer();
+//        openDrawer();
 //        loadNotes();
         LoaderManager.getInstance(this).restartLoader(LOADER_NOTES, null, this);
 //        mNoteRecyclerAdapter.notifyDataSetChanged();
