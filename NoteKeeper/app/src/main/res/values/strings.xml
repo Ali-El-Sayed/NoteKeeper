@@ -44,4 +44,5 @@
     <string name="default_email_address">name@host.com</string>
     <string name="favourite_social_network">Favourite Social Network</string>
     <string name="menu_share">Share</string>
+    <string name="set_reminder">Set Reminder</string>
 </resources>

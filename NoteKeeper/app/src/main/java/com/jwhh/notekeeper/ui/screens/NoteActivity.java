@@ -3,19 +3,25 @@ package com.jwhh.notekeeper.ui.screens;
 
 import static com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract.*;
 
-import android.content.ContentResolver;
+import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
@@ -23,7 +29,9 @@ import androidx.loader.content.Loader;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -36,8 +44,12 @@ import com.jwhh.notekeeper.data.database.NoteKeeperDBOpenHelper;
 import com.jwhh.notekeeper.data.model.CourseInfo;
 import com.jwhh.notekeeper.data.model.DataManager;
 import com.jwhh.notekeeper.data.model.NoteInfo;
+import com.jwhh.notekeeper.notification.NotificationReceiver;
+import com.jwhh.notekeeper.notification.NoteReminderNotification;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Random;
 
 public class NoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -46,6 +58,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final int LOADER_NOTES = 0;
     public static final int LOADER_COURSES = 1;
 
+    private ProgressBar mProgressBar;
     private Spinner mSpinnerCourses;
     private EditText mTextNoteTitle;
     private EditText mTextNoteText;
@@ -71,8 +84,12 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_note);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        mTextNoteTitle = findViewById(R.id.text_note_title);
+        mTextNoteText = findViewById(R.id.text_note_text);
+        mSpinnerCourses = findViewById(R.id.spinner_courses);
+        mProgressBar = findViewById(R.id.progressBar);
         mDBOpenHelper = new NoteKeeperDBOpenHelper(this);
+
 
         // Configuration changes
         ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
@@ -80,9 +97,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         mViewModel = viewModelProvider.get(NoteActivityViewModel.class);
         if (mViewModel.mIsNewlyCreated && savedInstanceState != null)
             mViewModel.restoreState(savedInstanceState);
-
         mViewModel.mIsNewlyCreated = false;
-        mSpinnerCourses = findViewById(R.id.spinner_courses);
 
 //        List<CourseInfo> courses = DataManager.getInstance().getCourses();
 //        ArrayAdapter<CourseInfo> adapterCourses =
@@ -95,16 +110,16 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 //        loadCourseData();
         LoaderManager.getInstance(this).initLoader(LOADER_COURSES, null, this);
 
+        mNoteId = new Intent().getLongExtra(NOTE_ID, ID_NOT_SET);
         readDisplayStateValues();
         saveOriginalNoteValues();
 
-        mTextNoteTitle = findViewById(R.id.text_note_title);
-        mTextNoteText = findViewById(R.id.text_note_text);
 
         if (!mIsNewNote)
 //            loadNoteData();
             LoaderManager.getInstance(this).initLoader(LOADER_NOTES, null, this);
     }
+
 
     @Override
     protected void onResume() {
@@ -138,7 +153,11 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         String[] selectionArgs = {Long.toString(mNoteId)};
         getContentResolver().delete(Notes.CONTENT_URI, selection, selectionArgs);
 
-        Toast.makeText(this, "Note Ignored", Toast.LENGTH_SHORT).show();
+        if (mIsNewNote)
+            Toast.makeText(this, "Note Deleted", Toast.LENGTH_SHORT).show();
+        else
+            Toast.makeText(this, "Edit Ignored", Toast.LENGTH_SHORT).show();
+
     }
 
     @Override
@@ -200,23 +219,53 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private void readDisplayStateValues() {
         Intent intent = getIntent();
         mNoteId = intent.getIntExtra(NOTE_ID, ID_NOT_SET); // ID_NOT_SET  for default value
+        mNoteUri = ContentUris.withAppendedId(Notes.CONTENT_URI, mNoteId);
         mIsNewNote = mNoteId == ID_NOT_SET;
-
         if (mIsNewNote)
             createNewNote();
 //        mNote = DataManager.getInstance().getNotes().get(mNoteId);
     }
 
     private void createNewNote() {
+        @SuppressLint("StaticFieldLeak")
+        AsyncTask<ContentValues, Integer, Uri> task = new AsyncTask<ContentValues, Integer, Uri>() {
+            @Override
+            protected void onPreExecute() {
+                mProgressBar.setVisibility(View.VISIBLE);
+                mProgressBar.setProgress(1);
+            }
+
+            @Override
+            protected void onProgressUpdate(Integer... values) {
+                mProgressBar.setProgress(values[0]);
+            }
+
+            @Override
+            protected Uri doInBackground(ContentValues... contentValues) {
+                publishProgress(2);
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                publishProgress(3);
+                ContentValues insertValues = contentValues[0];
+                return getContentResolver().insert(Notes.CONTENT_URI, insertValues);
+            }
+
+            @Override
+            protected void onPostExecute(Uri uri) {
+                mProgressBar.setVisibility(View.GONE);
+                mNoteUri = uri;
+            }
+        };
 
         ContentValues values = new ContentValues();
         values.put(Notes.COLUMN_COURSE_ID, "android_intents");
         values.put(Notes.COLUMN_NOTE_TITLE, "");
         values.put(Notes.COLUMN_NOTE_TEXT, "");
-
-        getContentResolver().insert(Notes.CONTENT_URI, values);
+        task.execute(values);
         mNoteId = ContentUris.parseId(mNoteUri);
-
 //        SQLiteDatabase db = mDBOpenHelper.getWritableDatabase();
 //        mNoteId = (int) db.insert(NoteInfoTable.TABLE_NAME, null, values);
     }
@@ -242,9 +291,11 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         mSpinnerCourses.setSelection(courseIndex);
         mTextNoteTitle.setText(noteTitle);
         mTextNoteText.setText(noteText);
-        mNoteCursor.close();
+//        mNoteCursor.close();
         mNoteUri = ContentUris.withAppendedId(Notes.CONTENT_URI, mNoteId);
 
+        mNote.setText(noteText);
+        mNote.setTitle(noteTitle);
     }
 
 
@@ -281,7 +332,6 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_send_mail) {
             sendEmail();
-
             return true;
         } else if (id == R.id.action_cancel) {
             mIsCancelling = true;
@@ -289,9 +339,71 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         } else if (id == R.id.action_next) {
             moveNext();
+        } else if (id == R.id.action_set_reminder) {
+            mNoteId = ContentUris.parseId(mNoteUri);
+            Random random = new Random();
+            int notificationId = random.nextInt();
+            NoteReminderNotification.notify(NoteActivity.this,
+                    mNote.getTitle(),
+                    mNote.getText(),
+                    notificationId, mNoteId);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showReminderNotification() {
+        PendingIntent openActivity, toastMessage;
+
+        Random random = new Random();
+        int notificationId = random.nextInt();
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel =
+                    new NotificationChannel("actionStyleNotificationId", "Action Style Notification", NotificationManager.IMPORTANCE_HIGH);
+            notificationChannel.setDescription("Notification Description");
+            notificationChannel.enableLights(true);
+            notificationChannel.enableVibration(true);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+        Intent openActivityIntent = new Intent(this, NoteActivity.class);
+        Intent toastIntent = new Intent(this, NotificationReceiver.class);
+//        toastIntent.putExtra("ToastMessage", "This is Message Extra");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            openActivity = PendingIntent.getActivity(this,
+                    0,
+                    openActivityIntent,
+                    PendingIntent.FLAG_MUTABLE);
+            toastMessage = PendingIntent.getBroadcast(this,
+                    1,
+                    toastIntent,
+                    PendingIntent.FLAG_MUTABLE);
+        } else {
+            openActivity = PendingIntent.getActivity(this,
+                    0,
+                    openActivityIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+            toastMessage = PendingIntent.getBroadcast(this,
+                    1,
+                    toastIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this, "actionStyleNotificationId");
+
+        builder.setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentTitle(getResources().getString(R.string.app_name))
+                .setContentText(mNote.getTitle())
+                .setContentIntent(openActivity)
+                .addAction(R.drawable.ic_launcher_foreground, "First Button", toastMessage)
+                .addAction(R.drawable.ic_launcher_foreground, "Second Button", toastMessage);
+
+        notificationManager.notify(notificationId, builder.build());
+
     }
 
     @Override
@@ -386,7 +498,6 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
         //when loader is created
-        SQLiteDatabase db = mDBOpenHelper.getReadableDatabase();
         CursorLoader loader = null;
 
         if (id == LOADER_NOTES)

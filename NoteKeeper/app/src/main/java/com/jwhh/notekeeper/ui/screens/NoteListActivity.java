@@ -12,6 +12,7 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.jwhh.notekeeper.BuildConfig;
 import com.jwhh.notekeeper.SettingsActivity;
 import com.jwhh.notekeeper.data.database.NoteKeeperDBOpenHelper;
 import com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract;
@@ -26,6 +27,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.StrictMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -109,6 +113,7 @@ public class NoteListActivity extends AppCompatActivity
         });
 
         initializeDisplayContent();
+        enableStrictMode();
 
     }
 
@@ -160,9 +165,20 @@ public class NoteListActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        openDrawer();
 //        loadNotes();
         LoaderManager.getInstance(this).restartLoader(LOADER_NOTES, null, this);
 //        mNoteRecyclerAdapter.notifyDataSetChanged();
+    }
+
+    private void openDrawer() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        }, 1000);
     }
 
     private void loadNotes() {
@@ -286,5 +302,16 @@ public class NoteListActivity extends AppCompatActivity
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         if (loader.getId() == LOADER_NOTES)
             mNoteRecyclerAdapter.changeCursor(null);
+    }
+
+    public void enableStrictMode() {
+        if (BuildConfig.DEBUG) {
+//                    .detectDiskReads().detectDiskWrites().detectNetwork().build();
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+        }
     }
 }
