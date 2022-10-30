@@ -14,6 +14,8 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
 import com.jwhh.notekeeper.R;
+import com.jwhh.notekeeper.services.NoteBackup;
+import com.jwhh.notekeeper.services.NoteBackupService;
 import com.jwhh.notekeeper.ui.screens.NoteActivity;
 import com.jwhh.notekeeper.ui.screens.NoteListActivity;
 
@@ -31,6 +33,9 @@ public class NoteReminderNotification {
 
         Intent intent = new Intent(context, NoteActivity.class);
         intent.putExtra(NoteActivity.NOTE_ID, noteId);
+
+        Intent backupServiceIntent = new Intent(context, NoteBackupService.class);
+        backupServiceIntent.putExtra(NoteBackupService.EXTRA_COURSE_ID, NoteBackup.ALL_COURSES);
 
         NotificationCompat.Builder builder = new
                 NotificationCompat.Builder(context, REMINDER_CHANNEL);
@@ -54,13 +59,20 @@ public class NoteReminderNotification {
 //                                intent,
 //                                PendingIntent.FLAG_MUTABLE)
 //                )
+
                 .addAction(0, "View All notes",
                         PendingIntent.getActivity(
                                 context, 0
                                 , new Intent(context, NoteListActivity.class),
                                 PendingIntent.FLAG_MUTABLE
 
-                        )).setAutoCancel(true);
+                        ))
+                .addAction(0,
+                        "Backup Notes",
+                        PendingIntent.getService(context,
+                                2,
+                                backupServiceIntent
+                                , PendingIntent.FLAG_MUTABLE)).setAutoCancel(true);
         notify(context, builder.build());
     }
 

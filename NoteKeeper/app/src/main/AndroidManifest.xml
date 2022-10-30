@@ -10,6 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <service
+            android:name=".services.NoteUploaderJobService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE">
+
+        </service>
+        <service
             android:name=".services.NoteBackupService"
             android:exported="false" />
 
@@ -17,7 +24,7 @@
             android:name=".data.provider.NoteKeeperProvider"
             android:authorities="com.jwhh.notekeeper.provider"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <activity
             android:name=".SettingsActivity"
