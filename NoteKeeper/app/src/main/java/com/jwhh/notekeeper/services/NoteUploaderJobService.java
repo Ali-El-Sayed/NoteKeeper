@@ -27,6 +27,8 @@ public class NoteUploaderJobService extends JobService {
                         String stringNotesUri = jobParams.getExtras().getString(EXTRA_DATA_URI);
                         Uri notesUri = Uri.parse(stringNotesUri);
                         noteUploader.doUpload(notesUri);
+                        //Call to indicate work is complete
+                        //But don’t call when work stopped by onStopJob method
                         if (!noteUploader.isCanceled())
                             jobFinished(jobParams, false);
 
@@ -41,6 +43,7 @@ public class NoteUploaderJobService extends JobService {
         return true;
     }
 
+    // Indicates when one or more piece of Criteria is no longer valid
     @Override
     public boolean onStopJob(JobParameters params) {
         noteUploader.cancel();
