@@ -46,6 +46,7 @@ import com.jwhh.notekeeper.data.model.DataManager;
 import com.jwhh.notekeeper.data.model.NoteInfo;
 import com.jwhh.notekeeper.notification.NotificationReceiver;
 import com.jwhh.notekeeper.notification.NoteReminderNotification;
+import com.jwhh.notekeeper.services.broadcast.CourseEventBroadcastHelper;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -264,7 +265,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(Notes.COLUMN_COURSE_ID, "android_intents");
         values.put(Notes.COLUMN_NOTE_TITLE, "");
         values.put(Notes.COLUMN_NOTE_TEXT, "");
-        task.execute(values );
+        task.execute(values);
         mNoteId = ContentUris.parseId(mNoteUri);
 //        SQLiteDatabase db = mDBOpenHelper.getWritableDatabase();
 //        mNoteId = (int) db.insert(NoteInfoTable.TABLE_NAME, null, values);
@@ -296,6 +297,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mNote.setText(noteText);
         mNote.setTitle(noteTitle);
+
+        CourseEventBroadcastHelper.sendEventBroadcast(this, courseId, "Editing a Note");
     }
 
 
@@ -486,6 +489,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         String text = "Check out What I learned in the Pluralsight course \""
                 + course.getTitle() + ".\"\n" + mTextNoteTitle.getText();
 
+        // Implicit Intent
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("message/rfc2822"); //Standard Email MIME type
 
