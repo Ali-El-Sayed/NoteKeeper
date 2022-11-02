@@ -4,6 +4,7 @@ package com.jwhh.notekeeper.ui.screens;
 import static com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract.*;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -27,6 +28,7 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 
+import android.os.SystemClock;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,6 +49,7 @@ import com.jwhh.notekeeper.data.model.NoteInfo;
 import com.jwhh.notekeeper.notification.NotificationReceiver;
 import com.jwhh.notekeeper.notification.NoteReminderNotification;
 import com.jwhh.notekeeper.services.broadcast.CourseEventBroadcastHelper;
+import com.jwhh.notekeeper.services.broadcast.NoteReminderReceiver;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -343,69 +346,88 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         } else if (id == R.id.action_next) {
             moveNext();
         } else if (id == R.id.action_set_reminder) {
-            mNoteId = ContentUris.parseId(mNoteUri);
-            Random random = new Random();
-            int notificationId = random.nextInt();
-            NoteReminderNotification.notify(NoteActivity.this,
-                    mNote.getTitle(),
-                    mNote.getText(),
-                    notificationId, mNoteId);
+            showReminderNotification();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     private void showReminderNotification() {
-        PendingIntent openActivity, toastMessage;
+//        PendingIntent openActivity, toastMessage;
+//
+//        Random random = new Random();
+//        int notificationId = random.nextInt();
+//
+//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            NotificationChannel notificationChannel =
+//                    new NotificationChannel("actionStyleNotificationId", "Action Style Notification", NotificationManager.IMPORTANCE_HIGH);
+//            notificationChannel.setDescription("Notification Description");
+//            notificationChannel.enableLights(true);
+//            notificationChannel.enableVibration(true);
+//            notificationManager.createNotificationChannel(notificationChannel);
+//        }
+//        Intent openActivityIntent = new Intent(this, NoteActivity.class);
+//        Intent toastIntent = new Intent(this, NotificationReceiver.class);
+////        toastIntent.putExtra("ToastMessage", "This is Message Extra");
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//            openActivity = PendingIntent.getActivity(this,
+//                    0,
+//                    openActivityIntent,
+//                    PendingIntent.FLAG_MUTABLE);
+//            toastMessage = PendingIntent.getBroadcast(this,
+//                    1,
+//                    toastIntent,
+//                    PendingIntent.FLAG_MUTABLE);
+//        } else {
+//            openActivity = PendingIntent.getActivity(this,
+//                    0,
+//                    openActivityIntent,
+//                    PendingIntent.FLAG_UPDATE_CURRENT);
+//            toastMessage = PendingIntent.getBroadcast(this,
+//                    1,
+//                    toastIntent,
+//                    PendingIntent.FLAG_UPDATE_CURRENT);
+//        }
+//
+//        NotificationCompat.Builder builder =
+//                new NotificationCompat.Builder(this, "actionStyleNotificationId");
+//
+//        builder.setWhen(System.currentTimeMillis())
+//                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                .setPriority(NotificationCompat.PRIORITY_HIGH)
+//                .setContentTitle(getResources().getString(R.string.app_name))
+//                .setContentText(mNote.getTitle())
+//                .setContentIntent(openActivity)
+//                .addAction(R.drawable.ic_launcher_foreground, "First Button", toastMessage)
+//                .addAction(R.drawable.ic_launcher_foreground, "Second Button", toastMessage);
+//
+//        notificationManager.notify(notificationId, builder.build());
+        //=======================================//
 
-        Random random = new Random();
-        int notificationId = random.nextInt();
+//        mNoteId = ContentUris.parseId(mNoteUri);
+//        Random random = new Random();
+//        int notificationId = random.nextInt();
+//        NoteReminderNotification.notify(NoteActivity.this,
+//                mNote.getTitle(),
+//                mNote.getText(),
+//                notificationId, mNoteId);
+        Intent intent = new Intent(this, NoteReminderReceiver.class);
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_TITLE, mNote.getTitle());
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_TEXT, mNote.getText());
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_ID, mNote.getId());
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel =
-                    new NotificationChannel("actionStyleNotificationId", "Action Style Notification", NotificationManager.IMPORTANCE_HIGH);
-            notificationChannel.setDescription("Notification Description");
-            notificationChannel.enableLights(true);
-            notificationChannel.enableVibration(true);
-            notificationManager.createNotificationChannel(notificationChannel);
-        }
-        Intent openActivityIntent = new Intent(this, NoteActivity.class);
-        Intent toastIntent = new Intent(this, NotificationReceiver.class);
-//        toastIntent.putExtra("ToastMessage", "This is Message Extra");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            openActivity = PendingIntent.getActivity(this,
-                    0,
-                    openActivityIntent,
-                    PendingIntent.FLAG_MUTABLE);
-            toastMessage = PendingIntent.getBroadcast(this,
-                    1,
-                    toastIntent,
-                    PendingIntent.FLAG_MUTABLE);
-        } else {
-            openActivity = PendingIntent.getActivity(this,
-                    0,
-                    openActivityIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-            toastMessage = PendingIntent.getBroadcast(this,
-                    1,
-                    toastIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-        }
+        PendingIntent pendingIntent = PendingIntent.
+                getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE);
 
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this, "actionStyleNotificationId");
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        long currentTimeInMilliseconds = SystemClock.elapsedRealtime();
+        long ONE_HOUR = 60 * 60 * 1000;
+        long FIVE_SECONDS = 5 * 1000;
+        long alarmTime = currentTimeInMilliseconds + FIVE_SECONDS;
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME
+                , alarmTime, 0, pendingIntent);
 
-        builder.setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentTitle(getResources().getString(R.string.app_name))
-                .setContentText(mNote.getTitle())
-                .setContentIntent(openActivity)
-                .addAction(R.drawable.ic_launcher_foreground, "First Button", toastMessage)
-                .addAction(R.drawable.ic_launcher_foreground, "Second Button", toastMessage);
-
-        notificationManager.notify(notificationId, builder.build());
 
     }
 
