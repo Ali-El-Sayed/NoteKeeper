@@ -5,8 +5,6 @@ import static com.jwhh.notekeeper.data.provider.NoteKeeperProviderContract.*;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -15,20 +13,18 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.NotificationCompat;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,6 +54,11 @@ import java.util.Random;
 public class NoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String NOTE_ID = "com.jwhh.notekeeper.NOTE_INFO";
+    public static final String NOTE_URI = "com.jwhh.notekeeper.NOTE_URI";
+    public static final String ORIGINAL_NOTE_COURSE_ID = "com.jwhh.notekeeper.ORIGINAL_NOTE_COURSE_ID";
+    public static final String ORIGINAL_NOTE_TITLE = "com.jwhh.notekeeper.ORIGINAL_NOTE_TITLE";
+    public static final String ORIGINAL_NOTE_TEXT = "com.jwhh.notekeeper.ORIGINAL_NOTE_TEXT";
+
     public static final int ID_NOT_SET = -1;
     public static final int LOADER_NOTES = 0;
     public static final int LOADER_COURSES = 1;
@@ -68,6 +69,9 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private EditText mTextNoteText;
     private NoteInfo mNote = new NoteInfo(DataManager.getInstance().getCourses().get(0), "", "");
     private boolean mIsNewNote;
+    private String mOriginalNoteCourseId;
+    private String mOriginalNoteTitle;
+    private String mOriginalNoteText;
     private long mNoteId;
     private boolean mIsCancelling;
     private NoteActivityViewModel mViewModel;
@@ -96,12 +100,12 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
         // Configuration changes
-        ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
-                (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
-        mViewModel = viewModelProvider.get(NoteActivityViewModel.class);
-        if (mViewModel.mIsNewlyCreated && savedInstanceState != null)
-            mViewModel.restoreState(savedInstanceState);
-        mViewModel.mIsNewlyCreated = false;
+//        ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
+//                (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
+//        mViewModel = viewModelProvider.get(NoteActivityViewModel.class);
+//        if (mViewModel.mIsNewlyCreated && savedInstanceState != null)
+//            mViewModel.restoreState(savedInstanceState);
+//        mViewModel.mIsNewlyCreated = false;
 
 //        List<CourseInfo> courses = DataManager.getInstance().getCourses();
 //        ArrayAdapter<CourseInfo> adapterCourses =
@@ -116,11 +120,16 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mNoteId = new Intent().getLongExtra(NOTE_ID, ID_NOT_SET);
         readDisplayStateValues();
-        saveOriginalNoteValues();
+        if (savedInstanceState == null)
+            saveOriginalNoteValues();
+        else {
+            restoreOriginalNoteValues(savedInstanceState);
+            String stringNoteUri = savedInstanceState.getString(NOTE_URI);
+            mNoteUri = Uri.parse(stringNoteUri);
+        }
 
-
+//loadNoteData();
         if (!mIsNewNote)
-//            loadNoteData();
             LoaderManager.getInstance(this).initLoader(LOADER_NOTES, null, this);
     }
 
@@ -214,9 +223,16 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         if (mIsNewNote)
             return;
 
-        mViewModel.mOriginalNoteCourseId = mNote.getCourse().getCourseId();
-        mViewModel.mOriginalNoteTitle = mNote.getTitle();
-        mViewModel.mOriginalNoteText = mNote.getText();
+        mOriginalNoteCourseId = mNote.getCourse().getCourseId();
+        mOriginalNoteTitle = mNote.getTitle();
+        mOriginalNoteText = mNote.getText();
+
+    }
+
+    private void restoreOriginalNoteValues(Bundle savedInstanceState) {
+        mOriginalNoteCourseId = savedInstanceState.getString(ORIGINAL_NOTE_COURSE_ID);
+        mOriginalNoteTitle = savedInstanceState.getString(ORIGINAL_NOTE_TITLE);
+        mOriginalNoteText = savedInstanceState.getString(ORIGINAL_NOTE_TEXT);
 
     }
 
@@ -231,45 +247,29 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void createNewNote() {
-        @SuppressLint("StaticFieldLeak")
-        AsyncTask<ContentValues, Integer, Uri> task = new AsyncTask<ContentValues, Integer, Uri>() {
+        ContentValues values = new ContentValues();
+        values.put(Notes.COLUMN_COURSE_ID, "android_intents");
+        values.put(Notes.COLUMN_NOTE_TITLE, "");
+        values.put(Notes.COLUMN_NOTE_TEXT, "");
+
+        new Thread(new Runnable() {
             @Override
-            protected void onPreExecute() {
-                mProgressBar.setVisibility(View.VISIBLE);
+            public void run() {
                 mProgressBar.setProgress(1);
-            }
+                Log.d("BackGroundWork", "Starting backGround Thread: " + Thread.currentThread().getId());
+                mProgressBar.setProgress(2);
 
-            @Override
-            protected void onProgressUpdate(Integer... values) {
-                mProgressBar.setProgress(values[0]);
-            }
-
-            @Override
-            protected Uri doInBackground(ContentValues... contentValues) {
-                publishProgress(2);
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                publishProgress(3);
-                ContentValues insertValues = contentValues[0];
-                return getContentResolver().insert(Notes.CONTENT_URI, insertValues);
-            }
-
-            @Override
-            protected void onPostExecute(Uri uri) {
+                mNoteUri = getContentResolver().insert(Notes.CONTENT_URI, values);
+                mProgressBar.setProgress(3);
                 mProgressBar.setVisibility(View.GONE);
-                mNoteUri = uri;
+                mNoteId = ContentUris.parseId(mNoteUri);
             }
-        };
-
-        ContentValues values = new ContentValues();
-        values.put(Notes.COLUMN_COURSE_ID, "android_intents");
-        values.put(Notes.COLUMN_NOTE_TITLE, "");
-        values.put(Notes.COLUMN_NOTE_TEXT, "");
-        task.execute(values);
-        mNoteId = ContentUris.parseId(mNoteUri);
+        }).start();
 //        SQLiteDatabase db = mDBOpenHelper.getWritableDatabase();
 //        mNoteId = (int) db.insert(NoteInfoTable.TABLE_NAME, null, values);
     }
@@ -454,7 +454,11 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onSaveInstanceState(@NotNull Bundle outState) {
         //verify the bundle isn't a null
         super.onSaveInstanceState(outState);
-        mViewModel.saveState(outState);
+        outState.putString(ORIGINAL_NOTE_COURSE_ID, mOriginalNoteCourseId);
+        outState.putString(ORIGINAL_NOTE_TITLE, mOriginalNoteTitle);
+        outState.putString(ORIGINAL_NOTE_TEXT, mOriginalNoteText);
+        outState.putString(NOTE_URI, mNoteUri.toString());
+
     }
 
     private void storePreviousNoteValues() {
@@ -595,8 +599,11 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         };
 
         Uri noteUri = ContentUris.withAppendedId(Notes.CONTENT_URI, mNoteId);
-        return new CursorLoader(this, noteUri, noteColumns,
+        CursorLoader loader = new CursorLoader(this, noteUri, noteColumns,
                 null, null, null);
+        Log.d("LOADERNOTES", "createLoaderNotes: " + loader);
+
+        return loader;
 //        return new CursorLoader(this) {
 //            @Override
 //            public Cursor loadInBackground() {

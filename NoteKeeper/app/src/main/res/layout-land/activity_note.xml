@@ -21,7 +21,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <!--    <include layout="@layout/content_note" />-->
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -32,11 +32,11 @@
             android:id="@+id/spinner_courses"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="4dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
             android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="SpeakableTextPresentCheck" />
@@ -45,14 +45,13 @@
             android:id="@+id/text_note_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:ems="10"
-            android:gravity="start|top"
+            android:layout_marginHorizontal="4dp"
+            android:layout_marginTop="16dp"
             android:hint="@string/note_title_hint"
             android:importantForAutofill="no"
             android:inputType="textMultiLine"
             android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="@+id/spinner_courses"
+            app:layout_constraintEnd_toStartOf="@+id/guideline5"
             app:layout_constraintStart_toStartOf="@+id/spinner_courses"
             app:layout_constraintTop_toBottomOf="@+id/spinner_courses"
             tools:ignore="SpeakableTextPresentCheck" />
@@ -61,15 +60,16 @@
             android:id="@+id/text_note_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:ems="10"
-            android:gravity="start|top"
+            android:layout_marginHorizontal="4dp"
+            android:layout_marginTop="16dp"
             android:hint="@string/note_text_hint"
+            android:importantForAutofill="no"
             android:inputType="textMultiLine"
             android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="@+id/text_note_title"
-            app:layout_constraintStart_toStartOf="@+id/text_note_title"
-            app:layout_constraintTop_toBottomOf="@+id/text_note_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline5"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="SpeakableTextPresentCheck" />
 
         <ProgressBar
@@ -83,5 +83,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="663dp" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
